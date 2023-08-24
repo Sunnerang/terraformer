@@ -9,7 +9,7 @@ terraform {
 }
 
 provider "azurerm" {
-  # Configuration options
+  features {}
 }
 
 resource "azurerm_resource_group" "terraformerresourcegroup" {
@@ -31,11 +31,23 @@ resource "azurerm_container_app_environment" "trgcontainerappenvironment" {
   resource_group_name        = azurerm_resource_group.terraformerresourcegroup.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.trganalyticsworkspace.id
 }
+
+
+
 resource "azurerm_container_app" "terraformercontainerapp" {
   name                         = "terraformercontainerapp"
   container_app_environment_id = azurerm_container_app_environment.trgcontainerappenvironment.id
   resource_group_name          = azurerm_resource_group.terraformerresourcegroup.name
   revision_mode                = "Single"
+
+
+  ingress {
+    target_port = 80
+    external_enabled = true
+    traffic_weight {
+      percentage = 100
+    }
+  }
 
   template {
     container {
@@ -47,10 +59,5 @@ resource "azurerm_container_app" "terraformercontainerapp" {
   }
 }
 
-resource "azurerm_container_registry" "acr" {
-  name                = "terraformerregistry"
-  resource_group_name = azurerm_resource_group.terraformerresourcegroup.name
-  location            = azurerm_resource_group.terraformerresourcegroup.location
-  sku                 = "Basic"
-  admin_enabled       = true
-}
+
+
